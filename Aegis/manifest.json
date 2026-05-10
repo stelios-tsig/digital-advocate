@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "name": "Aegis Shield",
+  "version": "6.0.0",
+  "description": "Δεν είσαι το προϊόν. Είσαι ο ιδιοκτήτης.",
+  "permissions": [
+    "storage",
+    "tabs",
+    "activeTab",
+    "scripting",
+    "declarativeNetRequest",
+    "declarativeNetRequestFeedback",
+    "contextMenus",
+    "notifications",
+    "clipboardWrite"
+  ],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Ψηφιακός Συνήγορος",
+    "default_icon": {
+      "16":  "icons/icon16.png",
+      "48":  "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "declarative_net_request": {
+    "rule_resources": [{
+      "id": "ad_block_rules",
+      "enabled": true,
+      "path": "rules.json"
+    }]
+  },
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "js": [
+      "content.js",
+      "consent-manager.js",
+      "privacy-headers.js",
+      "floating-badge.js"
+    ],
+    "run_at": "document_idle",
+    "all_frames": false
+  }],
+  "web_accessible_resources": [{
+    "resources": [
+      "chart.min.js",
+      "icons/*"
+    ],
+    "matches": ["<all_urls>"]
+  }],
+  "icons": {
+    "16":  "icons/icon16.png",
+    "48":  "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

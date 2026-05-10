@@ -1,0 +1,30 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*~
+
+# Node (if build tools added later)
+node_modules/
+npm-debug.log*
+
+# Build / packaging
+dist/
+build/
+*.zip
+*.crx
+
+# Chrome Extension private key — NEVER commit
+*.pem
+key.pem
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local

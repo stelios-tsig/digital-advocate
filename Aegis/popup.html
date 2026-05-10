@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="el" id="html-root">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Aegis Shield</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap');
+
+    :root {
+      --bg:       #0d0f12;
+      --surface:  #161a1f;
+      --surface2: #1c232b;
+      --border:   #1f2a35;
+      --accent:   #2dba8c;
+      --warn:     #e05c3a;
+      --gold:     #f59e0b;
+      --text:     #e2e8f0;
+      --muted:    #64748b;
+      --mono:     'Space Mono', monospace;
+      --sans:     'DM Sans', system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 380px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 13px;
+      overflow: hidden;
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--accent), #1a6b9c);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .header-info h1 {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .1em;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+    .header-info p {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+    .status-dot {
+      margin-left: auto;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 6px var(--accent);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1);   }
+      50%       { opacity: .5; transform: scale(.8); }
+    }
+
+    /* ── Tabs ───────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .tab {
+      flex: 1;
+      padding: 10px 4px;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: .06em;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color .15s, border-color .15s;
+      text-transform: uppercase;
+      user-select: none;
+    }
+    .tab.active  { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab:hover:not(.active) { color: var(--text); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Scrollable area ───────────────────────────── */
+    .scroll-area {
+      max-height: 400px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    .scroll-area::-webkit-scrollbar { width: 3px; }
+    .scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* ── Section label ─────────────────────────────── */
+    .slabel {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: .1em;
+      color: var(--muted);
+      text-transform: uppercase;
+      padding: 10px 16px 5px;
+    }
+
+    /* ── Stat cards ────────────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      padding: 12px 16px 8px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 6px;
+      text-align: center;
+    }
+    .stat-card.trackers { border-color: rgba(224,92,58,.35); }
+    .stat-card.accent   { border-color: rgba(45,186,140,.35); }
+    .stat-num {
+      font-family: var(--mono);
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .stat-card.trackers .stat-num { color: var(--warn); }
+    .stat-card.accent   .stat-num { color: var(--accent); }
+    .stat-lbl {
+      font-size: 9px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    /* ── Site row ──────────────────────────────────── */
+    .site-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .site-domain {
+      font-family: var(--mono);
+      font-size: 11px;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .site-badge {
+      font-family: var(--mono);
+      font-size: 9px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .site-badge.protected {
+      background: rgba(45,186,140,.1);
+      color: var(--accent);
+      border: 1px solid rgba(45,186,140,.25);
+    }
+    .site-badge.excluded {
+      background: rgba(100,116,139,.1);
+      color: var(--muted);
+      border: 1px solid rgba(100,116,139,.2);
+    }
+
+    /* ── Tracker list ──────────────────────────────── */
+    .tracker-list {
+      padding: 6px 16px 10px;
+      max-height: 88px;
+      overflow-y: auto;
+    }
+    .tracker-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 3px 0;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+    .tracker-row:last-child { border-bottom: none; }
+    .t-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--warn);
+      flex-shrink: 0;
+    }
+    .t-name {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      flex: 1;
+    }
+    .t-type {
+      font-size: 9px;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: rgba(224,92,58,.1);
+      color: var(--warn);
+    }
+    .no-trackers {
+      font-size: 11px;
+      color: var(--accent);
+      padding: 6px 0;
+      text-align: center;
+    }
+
+    /* ── Mini chart ────────────────────────────────── */
+    .chart-wrap {
+      padding: 8px 16px 12px;
+    }
+    .chart-lbl {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    /* ── Aliases tab ───────────────────────────────── */
+    .alias-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px 6px;
+    }
+    .alias-domain-lbl {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .btn-new {
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--accent);
+      background: rgba(45,186,140,.08);
+      color: var(--accent);
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .btn-new:hover { opacity: .8; }
+
+    .alias-list { padding: 0 16px 10px; }
+    .alias-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 6px;
+      transition: border-color .15s;
+    }
+    .alias-card:hover { border-color: rgba(45,186,140,.3); }
+    .alias-card.inactive { opacity: .45; }
+    .alias-addr {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--accent);
+      word-break: break-all;
+      margin-bottom: 5px;
+    }
+    .alias-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 7px;
+    }
+    .alias-site { font-size: 11px; color: var(--muted); flex: 1; }
+    .alias-uses { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+    .alias-actions { display: flex; gap: 5px; }
+    .alias-btn {
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: var(--sans);
+      transition: all .15s;
+    }
+    .alias-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .alias-btn.del:hover { border-color: var(--warn); color: var(--warn); }
+
+    .alias-empty {
+      text-align: center;
+      padding: 28px 16px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    /* ── Settings tab ──────────────────────────────── */
+    .lang-btns {
+      display: flex;
+      gap: 6px;
+      padding: 4px 16px 10px;
+    }
+    .lang-btn {
+      flex: 1;
+      padding: 7px 0;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all .15s;
+      text-align: center;
+    }
+    .lang-btn.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(45,186,140,.08);
+    }
+    .lang-btn:hover:not(.active) { border-color: var(--text); color: var(--text); }
+
+    /* Site exception block */
+    .exc-block { padding: 0 16px 10px; }
+    .exc-site-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 7px;
+    }
+    .exc-site-name {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text);
+    }
+    .btn-exc {
+      width: 100%;
+      padding: 8px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 10px;
+      cursor: pointer;
+      transition: all .15s;
+      text-align: center;
+    }
+    .btn-exc:hover { border-color: var(--warn); color: var(--warn); }
+    .btn-exc.is-excluded {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(45,186,140,.06);
+    }
+    .btn-exc.is-excluded:hover { border-color: var(--warn); color: var(--warn); background: none; }
+
+    .exc-list-wrap { margin-top: 10px; }
+    .exc-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+    .exc-item:last-child { border-bottom: none; }
+    .exc-domain { font-family: var(--mono); font-size: 10px; color: var(--muted); flex: 1; }
+    .exc-remove {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 12px;
+      cursor: pointer;
+      padding: 0 2px;
+      transition: color .15s;
+    }
+    .exc-remove:hover { color: var(--warn); }
+    .exc-empty { font-size: 10px; color: var(--muted); font-style: italic; padding: 4px 0; }
+
+    /* Feature toggles */
+    .toggles-block { padding: 0 16px 6px; }
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+    .toggle-row:last-child { border-bottom: none; }
+    .toggle-text .tl { font-size: 12px; color: var(--text); }
+    .toggle-text .ts { font-size: 10px; color: var(--muted); margin-top: 1px; }
+    .toggle {
+      position: relative;
+      width: 34px; height: 19px;
+      flex-shrink: 0;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .tslider {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .tslider::before {
+      content: '';
+      position: absolute;
+      width: 13px; height: 13px;
+      border-radius: 50%;
+      background: #fff;
+      top: 3px; left: 3px;
+      transition: transform .2s;
+    }
+    .toggle input:checked + .tslider { background: var(--accent); }
+    .toggle input:checked + .tslider::before { transform: translateX(15px); }
+
+    /* Data buttons */
+    .data-block { padding: 0 16px 12px; display: flex; flex-direction: column; gap: 6px; }
+    .data-btn {
+      width: 100%;
+      padding: 8px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 12px;
+      cursor: pointer;
+      font-family: var(--sans);
+      transition: all .15s;
+      text-align: left;
+    }
+    .data-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .data-btn.warn { color: var(--warn); border-color: rgba(224,92,58,.3); }
+    .data-btn.warn:hover { background: rgba(224,92,58,.06); }
+    .import-area {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 8px 10px;
+      resize: vertical;
+      min-height: 64px;
+      outline: none;
+    }
+
+    /* ── Toast ─────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 16px; left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background: var(--accent);
+      color: #0d0f12;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 20px;
+      opacity: 0;
+      transition: opacity .2s, transform .2s;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 999;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── Footer ────────────────────────────────────── */
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .footer-tagline { font-family: var(--mono); font-size: 9px; color: var(--muted); }
+    .footer-ver     { font-family: var(--mono); font-size: 9px; color: var(--border); }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="logo">🛡</div>
+  <div class="header-info">
+    <h1>Ψηφιακός Συνήγορος</h1>
+    <p id="header-domain">—</p>
+  </div>
+  <div class="status-dot" id="status-dot"></div>
+</header>
+
+<!-- Tabs -->
+<nav class="tabs">
+  <div class="tab active" data-tab="dashboard" id="tab-dashboard"></div>
+  <div class="tab"        data-tab="aliases"   id="tab-aliases"></div>
+  <div class="tab"        data-tab="settings"  id="tab-settings"></div>
+</nav>
+
+<!-- ── PANEL: Dashboard ── -->
+<div class="tab-panel active scroll-area" id="panel-dashboard">
+
+  <div class="stats-grid">
+    <div class="stat-card trackers">
+      <div class="stat-num" id="s-trackers">0</div>
+      <div class="stat-lbl" id="lbl-trackers"></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="s-cookies">0</div>
+      <div class="stat-lbl" id="lbl-cookies"></div>
+    </div>
+    <div class="stat-card accent">
+      <div class="stat-num" id="s-ads">0</div>
+      <div class="stat-lbl" id="lbl-ads"></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="s-consent">0</div>
+      <div class="stat-lbl" id="lbl-consent"></div>
+    </div>
+  </div>
+
+  <div class="site-row">
+    <span class="site-domain" id="site-domain">—</span>
+    <span class="site-badge protected" id="site-badge"></span>
+  </div>
+
+  <div class="tracker-list" id="tracker-list"></div>
+
+  <div class="chart-wrap">
+    <div class="chart-lbl" id="chart-lbl"></div>
+    <canvas id="mini-chart" height="70"></canvas>
+  </div>
+
+</div>
+
+<!-- ── PANEL: Aliases ── -->
+<div class="tab-panel scroll-area" id="panel-aliases">
+
+  <div class="alias-header">
+    <span class="alias-domain-lbl" id="alias-domain-lbl"></span>
+    <button class="btn-new" id="btn-new-alias"></button>
+  </div>
+
+  <div class="alias-list" id="alias-list"></div>
+
+</div>
+
+<!-- ── PANEL: Settings ── -->
+<div class="tab-panel scroll-area" id="panel-settings">
+
+  <!-- Language -->
+  <div class="slabel" id="lbl-section-language"></div>
+  <div class="lang-btns">
+    <button class="lang-btn" id="lang-el">🇬🇷 Ελληνικά</button>
+    <button class="lang-btn" id="lang-en">🇬🇧 English</button>
+  </div>
+
+  <!-- Site exception -->
+  <div class="slabel" id="lbl-section-site"></div>
+  <div class="exc-block">
+    <div class="exc-site-row">
+      <span class="exc-site-name" id="exc-site-name">—</span>
+      <span class="site-badge protected" id="exc-badge"></span>
+    </div>
+    <button class="btn-exc" id="btn-exc"></button>
+    <div class="exc-list-wrap">
+      <div class="slabel" style="padding:8px 0 4px;" id="lbl-excluded-sites"></div>
+      <div id="exc-list"></div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <div class="slabel" id="lbl-section-features"></div>
+  <div class="toggles-block">
+    <div class="toggle-row">
+      <div class="toggle-text">
+        <div class="tl" id="tl-cookies"></div>
+        <div class="ts" id="ts-cookies"></div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="tog-cookies">
+        <span class="tslider"></span>
+      </label>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-text">
+        <div class="tl" id="tl-trackers"></div>
+        <div class="ts" id="ts-trackers"></div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="tog-trackers">
+        <span class="tslider"></span>
+      </label>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-text">
+        <div class="tl" id="tl-consent"></div>
+        <div class="ts" id="ts-consent"></div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="tog-consent">
+        <span class="tslider"></span>
+      </label>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-text">
+        <div class="tl" id="tl-badge"></div>
+        <div class="ts" id="ts-badge"></div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="tog-badge">
+        <span class="tslider"></span>
+      </label>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-text">
+        <div class="tl" id="tl-https"></div>
+        <div class="ts" id="ts-https"></div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="tog-https">
+        <span class="tslider"></span>
+      </label>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-text">
+        <div class="tl" id="tl-referrer"></div>
+        <div class="ts" id="ts-referrer"></div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="tog-referrer">
+        <span class="tslider"></span>
+      </label>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-text">
+        <div class="tl" id="tl-dnt"></div>
+        <div class="ts" id="ts-dnt"></div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="tog-dnt">
+        <span class="tslider"></span>
+      </label>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle-text">
+        <div class="tl" id="tl-webrtc"></div>
+        <div class="ts" id="ts-webrtc"></div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="tog-webrtc">
+        <span class="tslider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Data -->
+  <div class="slabel" id="lbl-section-data"></div>
+  <div class="data-block">
+    <button class="data-btn" id="btn-export"></button>
+    <button class="data-btn" id="btn-import-toggle"></button>
+    <div id="import-wrap" style="display:none">
+      <textarea class="import-area" id="import-text"></textarea>
+      <button class="data-btn" id="btn-import-confirm" style="margin-top:4px"></button>
+    </div>
+    <button class="data-btn warn" id="btn-reset"></button>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Footer -->
+<footer class="footer">
+  <span class="footer-tagline" id="footer-tagline"></span>
+  <span class="footer-ver" id="footer-ver"></span>
+</footer>
+
+<script src="i18n.js"></script>
+<script src="alias-engine.js"></script>
+<script src="site-exceptions.js"></script>
+<script src="popup.js"></script>
+</body>
+</html>
